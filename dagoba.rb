@@ -19,7 +19,8 @@ class Dagoba
       raise "A vertex with id #{id} already exists"
     end
 
-    vertex = Graph::Vertex.new(id: id, attributes: attributes, relations: [])
+    node = Graph::Node.new(id: id, attributes: attributes)
+    vertex = Graph::Vertex.new(node: node, relations: [])
     @vertices << vertex
     @vertex_index[id] = vertex
   end

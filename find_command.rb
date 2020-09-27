@@ -9,8 +9,7 @@ class FindCommand
   end
 
   def run
-    # TODO: Return value?
-    @state
+    @state.map(&:node)
   end
 
   private

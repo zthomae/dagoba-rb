@@ -105,7 +105,10 @@ describe Dagoba do
         establish("start").knows("start")
         establish("start").knows("end")
       }
-      expect(graph.find("start").knows.run.length).to eq(2)
+      expect(graph.find("start").knows.run).to contain_exactly(
+        Graph::Node.new(id: "start", attributes: {}),
+        Graph::Node.new(id: "end", attributes: {})
+      )
     end
 
     it "allows chaining queries" do
@@ -117,7 +120,10 @@ describe Dagoba do
         establish("alice").parent_of("bob")
         establish("charlie").parent_of("bob")
       }
-      expect(graph.find("alice").parent_of.child_of.run.length).to eq(2)
+      expect(graph.find("alice").parent_of.child_of.run).to contain_exactly(
+        Graph::Node.new(id: "alice", attributes: {}),
+        Graph::Node.new(id: "charlie", attributes: {})
+      )
     end
   end
 end
