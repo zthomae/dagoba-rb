@@ -4,21 +4,26 @@ class FindCommand
   def initialize(graph:, start_vertex_id:)
     @graph = graph
     @relationship_types = graph.instance_variable_get(:@relationship_types)
+    @program = []
     @start_vertex = graph.send(:find_vertex, start_vertex_id)
-    @state = [@start_vertex]
   end
 
   def run
-    @state.map(&:node)
+    state = [@start_vertex]
+    @program.each do |relationship_type|
+      state = state.flat_map { |vertex|
+        vertex.relations.select { |r| r.relationship_type == relationship_type }.map { |edge| edge.end_vertex }
+      }
+    end
+
+    state.map(&:node)
   end
 
   private
 
   def method_missing(symbol, *args)
     if @relationship_types.has_key?(symbol)
-      @state = @state.flat_map { |vertex|
-        vertex.relations.select { |r| r.relationship_type == symbol }.map { |edge| edge.end_vertex }
-      }
+      @program << symbol
       self
     else
       super
