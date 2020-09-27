@@ -14,7 +14,7 @@ class Dagoba
     end
   end
 
-  def add_entry(id, **attributes)
+  def add_entry(id, attributes = {})
     if @vertex_index.has_key?(id)
       raise "An entry with id #{id} already exists"
     end
@@ -25,7 +25,7 @@ class Dagoba
     @vertex_index[id] = vertex
   end
 
-  def add_attributes(id, **attributes)
+  def add_attributes(id, attributes = {})
     unless @vertex_index.has_key?(id)
       raise "An entry with id #{id} does not already exist"
     end
@@ -46,6 +46,10 @@ class Dagoba
 
     @relationship_types[relationship_type] = inverse
     @relationship_types[inverse] = relationship_type
+  end
+
+  def has_relationship?(relationship_type)
+    @relationship_types.include?(relationship_type)
   end
 
   def establish(start_vertex_id)

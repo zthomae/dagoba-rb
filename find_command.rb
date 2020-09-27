@@ -1,29 +1,54 @@
 require_relative "./graph"
+require_relative "./pipe"
 
 class FindCommand
   def initialize(graph:, start_vertex_id:)
     @graph = graph
-    @relationship_types = graph.instance_variable_get(:@relationship_types)
-    @program = []
-    @start_vertex = graph.send(:find_vertex, start_vertex_id)
+    @program = [Vertices.new(@graph, [start_vertex_id])]
   end
 
   def run
-    state = [@start_vertex]
-    @program.each do |relationship_type|
-      state = state.flat_map { |vertex|
-        vertex.relations.select { |r| r.relationship_type == relationship_type }.map { |edge| edge.end_vertex }
-      }
+    max = @program.length - 1
+    maybe_gremlin = false
+    results = []
+    done = -1
+    pc = max
+
+    while done < max
+      step = @program[pc]
+      maybe_gremlin = step.next(maybe_gremlin)
+      if maybe_gremlin == Pipe::Commands::PULL
+        maybe_gremlin = false
+        if pc - 1 > done
+          pc -= 1
+          next
+        else
+          done = pc
+        end
+      elsif maybe_gremlin == Pipe::Commands::DONE
+        maybe_gremlin = false
+        done = pc
+      end
+
+      pc += 1
+
+      if pc > max
+        if maybe_gremlin
+          results << maybe_gremlin
+        end
+        maybe_gremlin = false
+        pc -= 1
+      end
     end
 
-    state.map(&:node)
+    results.map { |gremlin| gremlin.vertex.node }
   end
 
   private
 
   def method_missing(symbol, *args)
-    if @relationship_types.has_key?(symbol)
-      @program << symbol
+    if @graph.has_relationship?(symbol)
+      @program << Relationship.new(@graph, {relationship_type: symbol})
       self
     else
       super
@@ -31,6 +56,6 @@ class FindCommand
   end
 
   def respond_to_missing?(method_name, include_private = false)
-    @relationship_types.has_key?(symbol) || super
+    @graph.has_relationship?(symbol) || super
   end
 end
