@@ -14,15 +14,24 @@ class Dagoba
     end
   end
 
-  def vertex(id, **attributes)
+  def add_entry(id, **attributes)
     if @vertex_index.has_key?(id)
-      raise "A vertex with id #{id} already exists"
+      raise "An entry with id #{id} already exists"
     end
 
     node = Graph::Node.new(id: id, attributes: attributes)
     vertex = Graph::Vertex.new(node: node, relations: [])
     @vertices << vertex
     @vertex_index[id] = vertex
+  end
+
+  def add_attributes(id, **attributes)
+    unless @vertex_index.has_key?(id)
+      raise "An entry with id #{id} does not already exist"
+    end
+
+    vertex = @vertex_index[id]
+    vertex.node.attributes.merge!(attributes)
   end
 
   def relationship(relationship_type, inverse:)

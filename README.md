@@ -8,8 +8,8 @@ What I want the API to look like:
 
 ```ruby
 graph = Dagoba.new do
-  vertex "alice"
-  vertex "bob", hobbies: ["asdf", {x: 3}]
+  add_entry "alice"
+  add_entry "bob", hobbies: ["asdf", {x: 3}]
 
   relationship :knows, inverse: :known_by
   relationship :parent, inverse: :is_parent_of
@@ -17,8 +17,8 @@ graph = Dagoba.new do
   establish("bob").knows("alice")
 end
 
-graph.vertex("charlie")
-graph.vertex("delta")
+graph.add_entry("charlie")
+graph.add_entry("delta")
 
 graph.establish("bob").is_parent_of("charlie")
 graph.establish("delta").parent("bob")

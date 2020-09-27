@@ -13,7 +13,7 @@ describe Dagoba do
     it "will not allow you to establish a relationship with an invalid starting vertex" do
       graph = Dagoba.new {
         relationship(:knows, inverse: :knows)
-        vertex("end")
+        add_entry("end")
       }
       expect { graph.establish("start").knows("end") }.to raise_error(
         "Cannot establish relationship from nonexistent vertex start"
@@ -22,16 +22,16 @@ describe Dagoba do
 
     it "will not allow you to establish a relationship with an invalid type" do
       graph = Dagoba.new {
-        vertex "start"
-        vertex "end"
+        add_entry "start"
+        add_entry "end"
       }
       expect { graph.establish("start").knows("end") }.to raise_error(NoMethodError)
     end
 
     it "will allow you to establish a relationship of a valid type between two vertices" do
       graph = Dagoba.new {
-        vertex("start")
-        vertex("end")
+        add_entry("start")
+        add_entry("end")
         relationship(:knows, inverse: :knows)
       }
       expect { graph.establish("start").knows("end") }.not_to raise_error
@@ -39,8 +39,8 @@ describe Dagoba do
 
     it "will allow you to establish inverse relationships" do
       graph = Dagoba.new {
-        vertex("start")
-        vertex("end")
+        add_entry("start")
+        add_entry("end")
         relationship(:knows, inverse: :known_by)
       }
       expect { graph.establish("end").known_by("start") }.not_to raise_error
@@ -48,7 +48,7 @@ describe Dagoba do
 
     it "will allow you to establish self-relationships" do
       graph = Dagoba.new {
-        vertex("start")
+        add_entry("start")
         relationship(:knows, inverse: :knows)
       }
       expect { graph.establish("start").knows("start") }.not_to raise_error
@@ -56,8 +56,8 @@ describe Dagoba do
 
     it "will allow you to establish duplicate relationships" do
       graph = Dagoba.new {
-        vertex("start")
-        vertex("end")
+        add_entry("start")
+        add_entry("end")
         relationship(:knows, inverse: :knows)
       }
       expect { graph.establish("start").knows("end") }.not_to raise_error
@@ -66,8 +66,8 @@ describe Dagoba do
 
     it "will allow you to establish multiple relationship types" do
       graph = Dagoba.new {
-        vertex("start")
-        vertex("end")
+        add_entry("start")
+        add_entry("end")
         relationship(:knows, inverse: :knows)
         relationship(:is_parent_of, inverse: :is_child_of)
       }
@@ -92,7 +92,7 @@ describe Dagoba do
     it "returns empty when a node has no relations of a given type" do
       graph = Dagoba.new {
         relationship(:knows, inverse: :knows)
-        vertex("start")
+        add_entry("start")
       }
       expect(graph.find("start").knows.run).to be_empty
     end
@@ -100,8 +100,8 @@ describe Dagoba do
     it "returns the correct number of results when a node has relations of a given type" do
       graph = Dagoba.new {
         relationship(:knows, inverse: :knows)
-        vertex("start")
-        vertex("end")
+        add_entry("start")
+        add_entry("end")
         establish("start").knows("start")
         establish("start").knows("end")
       }
@@ -114,15 +114,16 @@ describe Dagoba do
     it "allows chaining queries" do
       graph = Dagoba.new {
         relationship(:parent_of, inverse: :child_of)
-        vertex("alice")
-        vertex("bob")
-        vertex("charlie")
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie", {age: 35, education: nil})
+        add_attributes("alice", {age: 45, education: "Ph.D"})
         establish("alice").parent_of("bob")
         establish("charlie").parent_of("bob")
       }
       expect(graph.find("alice").parent_of.child_of.run).to contain_exactly(
-        Graph::Node.new(id: "alice", attributes: {}),
-        Graph::Node.new(id: "charlie", attributes: {})
+        Graph::Node.new(id: "alice", attributes: {age: 45, education: "Ph.D"}),
+        Graph::Node.new(id: "charlie", attributes: {age: 35, education: nil})
       )
     end
   end
