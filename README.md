@@ -41,13 +41,4 @@ graph.find("bob").is_parent_of.run  # returns the node for "delta"
 ```
     
 If you grab multiple edges, the chained methods work in exactly the same
-way. You can define aliases to make queries look cleaner. Alias names
-cannot conflict with existing relationship or inverse names.
-
-```ruby
-graph.relationship_type(:parents).means(:parent)
-graph.relationship_type(:children).reverses(:parents)
-
-graph.parents.run  # returns the nodes for "bob" and "alice"
-graph.children.run  # returns the nodes for "charlie" and "bob"
-```
+way.
