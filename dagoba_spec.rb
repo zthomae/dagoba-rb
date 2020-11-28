@@ -1,6 +1,7 @@
 require "rspec"
 
 require_relative "./dagoba"
+require_relative "./find_command"
 
 describe Dagoba do
   describe "adding relationships" do
@@ -8,6 +9,21 @@ describe Dagoba do
       graph = Dagoba.new
       expect { graph.relationship(:knows) }.to raise_error(ArgumentError)
       expect { graph.relationship(:knows, inverse: nil) }.to raise_error(ArgumentError)
+    end
+
+    it "will not allow you to establish a relationship type that is not a symbol" do
+      graph = Dagoba.new
+      expect { graph.relationship("knows", inverse: :known_by) }.to raise_error(ArgumentError)
+      expect { graph.relationship(:knows, inverse: "known_by") }.to raise_error(ArgumentError)
+      expect { graph.relationship("knows", inverse: "known_by") }.to raise_error(ArgumentError)
+    end
+
+    FindCommand.reserved_words.each do |word|
+      it "will not allow you to establish a relationship type named #{word}" do
+        graph = Dagoba.new
+        expect { graph.relationship(word, inverse: :foobar) }.to raise_error(ArgumentError)
+        expect { graph.relationship(:foobar, inverse: word) }.to raise_error(ArgumentError)
+      end
     end
 
     it "will not allow you to establish a relationship with an invalid starting vertex" do
@@ -124,6 +140,22 @@ describe Dagoba do
       expect(graph.find("alice").parent_of.child_of.run).to contain_exactly(
         Graph::Node.new(id: "alice", attributes: {age: 45, education: "Ph.D"}),
         Graph::Node.new(id: "charlie", attributes: {age: 35, education: nil})
+      )
+    end
+
+    it "allows filtering queries" do
+      graph = Dagoba.new {
+        relationship(:parent_of, inverse: :child_of)
+        add_entry("alice", {age: 40})
+        add_entry("bob", {age: 12})
+        add_entry("charlie", {age: 10})
+        establish("alice").parent_of("bob")
+        establish("alice").parent_of("charlie")
+      }
+      expect(
+        graph.find("alice").parent_of.where { |child| child.attributes[:age] > 10 }.run
+      ).to contain_exactly(
+        Graph::Node.new(id: "bob", attributes: {age: 12})
       )
     end
   end

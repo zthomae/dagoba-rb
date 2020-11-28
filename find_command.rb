@@ -2,6 +2,10 @@ require_relative "./graph"
 require_relative "./pipe"
 
 class FindCommand
+  def self.reserved_words
+    instance_methods(false)
+  end
+
   def initialize(graph:, start_vertex_id:)
     @graph = graph
     @program = [Vertices.new(@graph, [start_vertex_id])]
@@ -42,6 +46,11 @@ class FindCommand
     end
 
     results.map { |gremlin| gremlin.vertex.node }
+  end
+
+  def where(&block)
+    @program << Filter.new(@graph, {predicate: block.to_proc})
+    self
   end
 
   private

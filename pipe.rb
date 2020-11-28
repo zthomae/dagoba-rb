@@ -83,3 +83,19 @@ class Relationship < Pipe
     @edges = @gremlin.vertex.relations.select { |r| r.relationship_type == @relationship_type }
   end
 end
+
+class Filter < Pipe
+  def initialize(graph, args)
+    super
+
+    @predicate = args[:predicate]
+  end
+
+  def next(maybe_gremlin)
+    if !maybe_gremlin || !@predicate.call(maybe_gremlin.vertex.node)
+      return Commands::PULL
+    end
+
+    maybe_gremlin
+  end
+end

@@ -38,7 +38,15 @@ class Dagoba
     unless inverse
       raise ArgumentError.new("Must provide inverse relationship type")
     end
-    if @relationship_types.has_key?(relationship_type)
+    if !relationship_type.is_a?(Symbol)
+      raise ArgumentError.new("relationship type #{relationship_type} must be symbol")
+    elsif FindCommand.reserved_words.include?(relationship_type)
+      raise ArgumentError.new("cannot create relationship type #{relationship_type} -- is a reserved word")
+    elsif FindCommand.reserved_words.include?(inverse)
+      raise ArgumentError.new("cannot create inverse relationship type #{relationship_type} -- is a reserved word")
+    elsif !inverse.is_a?(Symbol)
+      raise ArgumentError.new("inverse relationship type #{inverse} must be symbol")
+    elsif @relationship_types.has_key?(relationship_type)
       raise "A relationship type with the name #{relationship_type} already exists"
     elsif @relationship_types.has_key?(inverse)
       raise "A relationship type with the name #{inverse} already exists"
