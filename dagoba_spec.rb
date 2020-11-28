@@ -268,5 +268,20 @@ describe Dagoba do
         Graph::Node.new(id: "charlie", attributes: {programmer: true, salaried: false})
       )
     end
+
+    it "allows selecting attributes in results" do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice", {salary: 100_000})
+        add_entry("bob", {salary: 70_000})
+        add_entry("charlie", {salary: 1_000_000})
+        establish("alice").employee_of("charlie")
+        establish("bob").employee_of("charlie")
+      }
+      expect(graph.find("charlie").employer_of.select_attribute(:salary).run).to contain_exactly(
+        100_000,
+        70_000
+      )
+    end
   end
 end

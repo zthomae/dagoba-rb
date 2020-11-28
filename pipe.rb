@@ -6,10 +6,12 @@ class Pipe
 
   class Gremlin
     attr_reader :vertex, :state
+    attr_accessor :result
 
     def initialize(vertex:, state: {})
       @vertex = vertex
       @state = state
+      @result = nil
     end
 
     def go_to_vertex(new_vertex)
@@ -211,5 +213,24 @@ class WithAttributes < Pipe
     end
 
     maybe_gremlin
+  end
+end
+
+class SelectAttribute < Pipe
+  def initialize(graph, args)
+    super
+
+    @attribute = args[:attribute]
+  end
+
+  def next(maybe_gremlin)
+    return Commands::PULL unless maybe_gremlin
+
+    maybe_gremlin.result = maybe_gremlin.vertex.node.attributes[@attribute]
+    if maybe_gremlin.result.nil?
+      false
+    else
+      maybe_gremlin
+    end
   end
 end

@@ -45,7 +45,9 @@ class FindCommand
       end
     end
 
-    results.map { |gremlin| gremlin.vertex.node }
+    results.map do |gremlin|
+      gremlin.result || gremlin.vertex.node
+    end
   end
 
   def where(&block)
@@ -93,7 +95,22 @@ class FindCommand
   end
 
   def with_attributes(attributes)
+    attributes.each do |attribute, _|
+      unless attribute.is_a?(Symbol)
+        raise ArgumentError.new("attribute #{attribute} must be a symbol")
+      end
+    end
+
     @program << WithAttributes.new(@graph, {attributes: attributes})
+    self
+  end
+
+  def select_attribute(attribute)
+    unless attribute.is_a?(Symbol)
+      raise ArgumentError.new("attribute #{attribute} must be a symbol")
+    end
+
+    @program << SelectAttribute.new(@graph, {attribute: attribute})
     self
   end
 
