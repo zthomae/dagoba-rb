@@ -291,5 +291,29 @@ describe Dagoba do
       }
       expect(graph.find("bob").employee_of.run).to be_empty
     end
+
+    it "allows backtracking" do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice", {programmer: true})
+        add_entry("bob", {programmer: false})
+        add_entry("charlie", {programmer: false})
+        add_entry("daniel")
+        add_entry("emilio")
+        add_entry("frank")
+        establish("alice").employee_of("daniel")
+        establish("bob").employee_of("daniel")
+        establish("charlie").employee_of("emilio")
+        establish("daniel").employee_of("frank")
+        establish("emilio").employee_of("frank")
+      }
+      query = graph.find("frank")
+        .employer_of.as(:manager)
+        .employer_of.with_attributes({programmer: true})
+        .back(:manager)
+      expect(query.run).to contain_exactly(
+        Graph::Node.new(id: "daniel", attributes: {})
+      )
+    end
   end
 end
