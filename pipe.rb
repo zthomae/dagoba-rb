@@ -179,3 +179,19 @@ class Except < Pipe
     maybe_gremlin
   end
 end
+
+class Unique < Pipe
+  def initialize(graph, args)
+    super
+
+    @seen = {}
+  end
+
+  def next(maybe_gremlin)
+    return Commands::PULL unless maybe_gremlin
+    return Commands::PULL if @seen[maybe_gremlin.vertex.node.id]
+
+    @seen[maybe_gremlin.vertex.node.id] = true
+    maybe_gremlin
+  end
+end

@@ -232,5 +232,21 @@ describe Dagoba do
         Graph::Node.new(id: "daniel", attributes: {})
       )
     end
+
+    it "allows making result sets unique" do
+      graph = Dagoba.new {
+        relationship(:parent_of, inverse: :child_of)
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie")
+        add_entry("daniel")
+        establish("alice").parent_of("bob")
+        establish("alice").parent_of("charlie")
+        establish("alice").parent_of("daniel")
+      }
+      expect(graph.find("alice").parent_of.child_of.unique.run).to contain_exactly(
+        Graph::Node.new(id: "alice", attributes: {})
+      )
+    end
   end
 end

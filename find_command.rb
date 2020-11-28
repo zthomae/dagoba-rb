@@ -87,6 +87,11 @@ class FindCommand
     self
   end
 
+  def unique
+    @program << Unique.new(@graph, {})
+    self
+  end
+
   private
 
   def method_missing(symbol, *args)
