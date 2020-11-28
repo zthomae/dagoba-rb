@@ -92,6 +92,11 @@ class FindCommand
     self
   end
 
+  def with_attributes(attributes)
+    @program << WithAttributes.new(@graph, {attributes: attributes})
+    self
+  end
+
   private
 
   def method_missing(symbol, *args)

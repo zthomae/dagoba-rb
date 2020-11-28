@@ -248,5 +248,25 @@ describe Dagoba do
         Graph::Node.new(id: "alice", attributes: {})
       )
     end
+
+    it "allows selecting results by attribute", :aggregate_failures do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice", {programmer: true, salaried: true})
+        add_entry("bob", {programmer: false, salaried: true})
+        add_entry("charlie", {programmer: true, salaried: false})
+        add_entry("daniel")
+        establish("alice").employee_of("daniel")
+        establish("bob").employee_of("daniel")
+        establish("charlie").employee_of("daniel")
+      }
+      expect(graph.find("daniel").employer_of.with_attributes({programmer: true}).run).to contain_exactly(
+        Graph::Node.new(id: "alice", attributes: {programmer: true, salaried: true}),
+        Graph::Node.new(id: "charlie", attributes: {programmer: true, salaried: false})
+      )
+      expect(graph.find("daniel").employer_of.with_attributes({programmer: true, salaried: false}).run).to contain_exactly(
+        Graph::Node.new(id: "charlie", attributes: {programmer: true, salaried: false})
+      )
+    end
   end
 end
