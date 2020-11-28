@@ -237,6 +237,19 @@ class SelectAttribute < Pipe
   end
 end
 
+class SelectId < Pipe
+  def initialize(graph, args)
+    super
+  end
+
+  def next(maybe_gremlin)
+    return Commands::PULL unless maybe_gremlin
+
+    maybe_gremlin.result = maybe_gremlin.vertex.node.id
+    maybe_gremlin
+  end
+end
+
 class Back < Pipe
   def initialize(graph, args)
     super

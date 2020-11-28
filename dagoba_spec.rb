@@ -284,6 +284,21 @@ describe Dagoba do
       )
     end
 
+    it "allows selecting ids in results" do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice", {salary: 100_000})
+        add_entry("bob", {salary: 70_000})
+        add_entry("charlie", {salary: 1_000_000})
+        establish("alice").employee_of("charlie")
+        establish("bob").employee_of("charlie")
+      }
+      expect(graph.find("charlie").employer_of.select_id.run).to contain_exactly(
+        "alice",
+        "bob"
+      )
+    end
+
     it "allows chaining with nonexistent vertices" do
       graph = Dagoba.new {
         relationship(:employee_of, inverse: :employer_of)
@@ -311,9 +326,8 @@ describe Dagoba do
         .employer_of.as(:manager)
         .employer_of.with_attributes({programmer: true})
         .back(:manager)
-      expect(query.run).to contain_exactly(
-        Graph::Node.new(id: "daniel", attributes: {})
-      )
+        .select_id
+      expect(query.run).to contain_exactly("daniel")
     end
   end
 end
