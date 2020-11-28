@@ -211,5 +211,26 @@ describe Dagoba do
         Graph::Node.new(id: "charlie", attributes: {})
       )
     end
+
+    it "allows marking nodes and excluding them from a result set" do
+      graph = Dagoba.new {
+        relationship(:parent_of, inverse: :child_of)
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie")
+        add_entry("daniel")
+        establish("alice").parent_of("bob")
+        establish("alice").parent_of("charlie")
+        establish("alice").parent_of("daniel")
+      }
+      query = graph.find("bob").as(:me)
+        .child_of
+        .parent_of
+        .except(:me)
+      expect(query.run).to contain_exactly(
+        Graph::Node.new(id: "charlie", attributes: {}),
+        Graph::Node.new(id: "daniel", attributes: {})
+      )
+    end
   end
 end

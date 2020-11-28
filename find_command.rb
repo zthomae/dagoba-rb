@@ -78,6 +78,15 @@ class FindCommand
     self
   end
 
+  def except(mark)
+    unless mark.is_a?(Symbol)
+      raise ArgumentError.new("mark #{mark} must be a symbol")
+    end
+
+    @program << Except.new(@graph, {mark: mark})
+    self
+  end
+
   private
 
   def method_missing(symbol, *args)
