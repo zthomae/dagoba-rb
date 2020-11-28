@@ -82,6 +82,8 @@ class Relationship < Pipe
   end
 
   def retrieve_edges
+    return if @gremlin.vertex.nil?
+
     @edges = @gremlin.vertex.relations.select { |r| r.relationship_type == @relationship_type }
   end
 end

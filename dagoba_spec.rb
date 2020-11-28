@@ -283,5 +283,13 @@ describe Dagoba do
         70_000
       )
     end
+
+    it "allows chaining with nonexistent vertices" do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice")
+      }
+      expect(graph.find("bob").employee_of.run).to be_empty
+    end
   end
 end
