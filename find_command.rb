@@ -53,6 +53,11 @@ class FindCommand
     self
   end
 
+  def take(count)
+    @program << Take.new(@graph, {count: count})
+    self
+  end
+
   private
 
   def method_missing(symbol, *args)

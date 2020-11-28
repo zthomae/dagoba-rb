@@ -158,5 +158,35 @@ describe Dagoba do
         Graph::Node.new(id: "bob", attributes: {age: 12})
       )
     end
+
+    it "allows taking vertices", :aggregate_failures do
+      graph = Dagoba.new {
+        relationship(:parent_of, inverse: :child_of)
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie")
+        add_entry("daniel")
+        add_entry("emilio")
+        add_entry("frank")
+        establish("alice").parent_of("bob")
+        establish("alice").parent_of("charlie")
+        establish("alice").parent_of("daniel")
+        establish("alice").parent_of("emilio")
+        establish("alice").parent_of("frank")
+      }
+      # TODO: Should ordering be defined?
+      base_query = graph.find("alice").parent_of.take(2)
+      expect(base_query.run).to contain_exactly(
+        Graph::Node.new(id: "emilio", attributes: {}),
+        Graph::Node.new(id: "frank", attributes: {})
+      )
+      expect(base_query.run).to contain_exactly(
+        Graph::Node.new(id: "charlie", attributes: {}),
+        Graph::Node.new(id: "daniel", attributes: {})
+      )
+      expect(base_query.run).to contain_exactly(
+        Graph::Node.new(id: "bob", attributes: {})
+      )
+    end
   end
 end
