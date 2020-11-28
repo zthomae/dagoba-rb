@@ -58,6 +58,26 @@ class FindCommand
     self
   end
 
+  def as(mark)
+    unless mark.is_a?(Symbol)
+      raise ArgumentError.new("mark #{mark} must be a symbol")
+    end
+
+    @program << Mark.new(@graph, {mark: mark})
+    self
+  end
+
+  def merge(*marks)
+    marks.each do |mark|
+      unless mark.is_a?(Symbol)
+        raise ArgumentError.new("mark #{mark} must be a symbol")
+      end
+    end
+
+    @program << Merge.new(@graph, {marks: marks})
+    self
+  end
+
   private
 
   def method_missing(symbol, *args)

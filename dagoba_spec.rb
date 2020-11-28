@@ -188,5 +188,28 @@ describe Dagoba do
         Graph::Node.new(id: "bob", attributes: {})
       )
     end
+
+    it "allows marking nodes and merging them into a single result set" do
+      graph = Dagoba.new {
+        relationship(:parent_of, inverse: :child_of)
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie")
+        add_entry("daniel")
+        establish("alice").parent_of("bob")
+        establish("bob").parent_of("charlie")
+        establish("charlie").parent_of("daniel")
+      }
+      query = graph.find("daniel")
+        .child_of.as(:parent)
+        .child_of.as(:grandparent)
+        .child_of.as(:great_grandparent)
+        .merge(:parent, :grandparent, :great_grandparent)
+      expect(query.run).to contain_exactly(
+        Graph::Node.new(id: "alice", attributes: {}),
+        Graph::Node.new(id: "bob", attributes: {}),
+        Graph::Node.new(id: "charlie", attributes: {})
+      )
+    end
   end
 end

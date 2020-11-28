@@ -120,3 +120,44 @@ class Take < Pipe
     maybe_gremlin
   end
 end
+
+class Mark < Pipe
+  def initialize(graph, args)
+    super
+
+    @mark = args[:mark]
+  end
+
+  def next(maybe_gremlin)
+    return Commands::PULL unless maybe_gremlin
+
+    maybe_gremlin.state[:marks] ||= {}
+    maybe_gremlin.state[:marks][@mark] = maybe_gremlin.vertex
+    maybe_gremlin
+  end
+end
+
+class Merge < Pipe
+  def initialize(graph, args)
+    super
+
+    @marks = args[:marks]
+    @vertices = []
+  end
+
+  def next(maybe_gremlin)
+    return Commands::PULL if !maybe_gremlin && @vertices.empty?
+
+    if @vertices.empty?
+      maybe_gremlin.state[:marks] ||= {}
+      @vertices = @marks.map { |mark| maybe_gremlin.state[:marks][mark] }.compact
+      return Commands::PULL if @vertices.empty?
+    end
+
+    if maybe_gremlin
+      maybe_gremlin.go_to_vertex(@vertices.pop)
+    else
+      Pipe::Gremlin.new(vertex: @vertices.pop)
+    end
+  end
+end
