@@ -6,16 +6,24 @@ class Pipe
 
   class Gremlin
     attr_reader :vertex, :marks
-    attr_accessor :result
+    attr_accessor :transform
 
     def initialize(vertex:, marks: {})
       @vertex = vertex
       @marks = marks
-      @result = nil
+      @transform = nil
     end
 
     def go_to_vertex(new_vertex)
       Gremlin.new(vertex: new_vertex, marks: marks)
+    end
+
+    def result
+      if transform
+        transform.call(vertex.attributes)
+      else
+        vertex.attributes
+      end
     end
   end
 
@@ -226,12 +234,8 @@ class SelectAttributes < Pipe
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    maybe_gremlin.result = maybe_gremlin.vertex.attributes.slice(*@attributes)
-    if maybe_gremlin.result.nil?
-      false
-    else
-      maybe_gremlin
-    end
+    maybe_gremlin.transform = ->(attributes) { attributes.slice(*@attributes) }
+    maybe_gremlin
   end
 end
 

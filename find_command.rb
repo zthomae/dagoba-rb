@@ -45,9 +45,7 @@ class FindCommand
       end
     end
 
-    results.map do |gremlin|
-      gremlin.result || gremlin.vertex.attributes
-    end
+    results.map(&:result)
   end
 
   def where(&block)
