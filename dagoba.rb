@@ -8,6 +8,7 @@ class Dagoba
     @vertices = []
     @vertex_index = {}
     @relationship_types = {}
+    @query_types = {}
 
     if block_given?
       instance_exec(&block)
@@ -72,6 +73,20 @@ class Dagoba
       graph: self,
       start_vertex_id: start_vertex_id
     )
+  end
+
+  def add_query(query_type, &block)
+    if !query_type.is_a?(Symbol)
+      raise ArgumentError.new("query #{query} must be a symbol")
+    elsif block.nil?
+      raise ArgumentError.new("query must be given a block")
+    end
+
+    @query_types[query_type] = block.to_proc
+  end
+
+  def query(query_type)
+    @query_types[query_type]
   end
 
   private

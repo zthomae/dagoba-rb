@@ -29,6 +29,8 @@ Both the forward and backward edge directions are named.
 
 The `establish` method begins a statement to join two vertices with a given edge type.
 
+The `query` command will let you define an alias for a set of operations on a graph.
+
 ```ruby
 graph = Dagoba.new do
   add_entry "alice"
@@ -46,15 +48,17 @@ graph.add_entry("delta")
 graph.establish("bob").is_parent_of("charlie")
 graph.establish("delta").parent("bob")
 graph.establish("charlie").knows("bob")
+
+graph.add_query(:knows_with_hobbies) { |command| command.knows.with_attributes({hobbies: ["skiing"]}) }
 ```
 
 ## Querying the graph
 
-The `find` method begins constructing a statement to query the graph.
-It takes the ID of the vertex to begin querying from as its only argument.
-When you use the name of the relationship type as a method, you get the edges originating from the node you started with.
-Querying methods can be chained indefinitely.
-The query will not be evaluated until the `run` method is invoked.
+The `find` method begins constructing a statement to search the graph.
+It takes the ID of the vertex to begin searching from as its only argument.
+When you use the name of the relationship or query type as a method, you get the edges originating from the node you started with.
+Searching methods can be chained indefinitely.
+The search will not be evaluated until the `run` method is invoked.
 
 ```ruby
 graph.find("bob").knows.run  # returns the node for "alice"
@@ -62,22 +66,22 @@ graph.find("bob").known_by.run  # returns the node for "charlie"
 graph.find("bob").is_parent_of.run  # returns the node for "delta"
 ```
  
-There are also a set of special querying methods:
+There are also a set of special searching methods:
 
 - `where` will filter the result set based on a predicate.
 - `take` will return only the first N items of a result set.
    Calling `run` multiple times will return the rest of the items in sets of N.
 - `as` will mark the current vertex with a symbol.
    This allows you to reference or backtrack to it later.
-   (Since the "current" vertex will change as the query is evaluated, this can eventually be applied to multiple vertices.)
+   (Since the "current" vertex will change as the search is evaluated, this can eventually be applied to multiple vertices.)
 - `merge` will return all of the vertices matched by a collection of mark names.
 - `except` will exclude vertices matched by a mark name.
 - `unique` will deduplicate a result set by vertex ID.
 - `with_attributes` will filter out vertices in the result set that do not match all of a set of provided attributes.
   This is provided as a syntactic sugar, and could be implemented in terms of `where`.
-- `select_attribute` will return only a given attribute when the query is run, instead of entire vertices.
-- `select_id` will return only the result IDs when a query is run.
-- `back` will move the query pointer back to a marked vertex if a query has evaluated to a positive result.
+- `select_attribute` will return only a given attribute when the search is run, instead of entire vertices.
+- `select_id` will return only the result IDs when a search is run.
+- `back` will move the search pointer back to a marked vertex if a search has evaluated to a positive result.
   This is useful for retreating back to a desired vertex after conditions on its relations have been satisfied.
 
 ## License

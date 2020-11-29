@@ -329,5 +329,67 @@ describe Dagoba do
         .select_id
       expect(query.run).to contain_exactly("daniel")
     end
+
+    it "requires query types to be symbols" do
+      graph = Dagoba.new
+      expect { graph.add_query("something") { |x| x } }.to raise_error(ArgumentError)
+    end
+
+    it "requires queries to be defined with blocks" do
+      graph = Dagoba.new
+      expect { graph.add_query(:something) }.to raise_error(ArgumentError)
+    end
+
+    it "evaluates queries correctly" do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie")
+        add_entry("daniel")
+        establish("alice").employer_of("bob")
+        establish("bob").employer_of("charlie")
+        establish("alice").employer_of("daniel")
+        add_query(:middle_managers) { |command| command.employer_of.as(:manager).employer_of.back(:manager) }
+      }
+      expect(graph.find("alice").middle_managers.select_id.run).to contain_exactly("bob")
+    end
+
+    it "allows redefining queries", :aggregate_failures do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice")
+        add_entry("bob")
+        add_entry("charlie")
+        add_entry("daniel")
+        establish("alice").employer_of("bob")
+        establish("bob").employer_of("charlie")
+        establish("alice").employer_of("daniel")
+      }
+      graph.add_query(:interesting_managers) do |command|
+        command.employer_of.as(:manager).employer_of.back(:manager)
+      end
+      expect(graph.find("alice").interesting_managers.select_id.run).to contain_exactly("bob")
+      graph.add_query(:interesting_managers) do |command|
+        command.employer_of.as(:manager)
+      end
+      expect(graph.find("alice").interesting_managers.select_id.run).to contain_exactly("bob", "daniel")
+    end
+
+    it "allows second-order queries" do
+      graph = Dagoba.new {
+        relationship(:employee_of, inverse: :employer_of)
+        add_entry("alice", {title: "CTO", salary: 200_000})
+        add_entry("bob", {title: "EM2", salary: 150_000})
+        add_entry("charlie", {title: "SE2", salary: 90_000})
+        add_entry("daniel", {title: "LSE2", salary: 120_000})
+        establish("alice").employer_of("bob")
+        establish("bob").employer_of("charlie")
+        establish("alice").employer_of("daniel")
+        add_query(:middle_managers) { |command| command.employer_of.as(:manager).employer_of.back(:manager) }
+        add_query(:titles) { |command| command.select_attribute(:title) }
+      }
+      expect(graph.find("alice").middle_managers.titles.run).to contain_exactly("EM2")
+    end
   end
 end

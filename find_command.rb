@@ -135,6 +135,12 @@ class FindCommand
       @program << Relationship.new(@graph, {relationship_type: symbol})
       self
     else
+      maybe_query = @graph.query(symbol)
+      if maybe_query
+        maybe_query.call(self)
+        return self
+      end
+
       super
     end
   end
