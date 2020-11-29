@@ -5,17 +5,17 @@ class Pipe
   end
 
   class Gremlin
-    attr_reader :vertex, :state
+    attr_reader :vertex, :marks
     attr_accessor :result
 
-    def initialize(vertex:, state: {})
+    def initialize(vertex:, marks: {})
       @vertex = vertex
-      @state = state
+      @marks = marks
       @result = nil
     end
 
     def go_to_vertex(new_vertex)
-      Gremlin.new(vertex: new_vertex, state: @state)
+      Gremlin.new(vertex: new_vertex, marks: marks)
     end
   end
 
@@ -135,8 +135,7 @@ class Mark < Pipe
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    maybe_gremlin.state[:marks] ||= {}
-    maybe_gremlin.state[:marks][@mark] = maybe_gremlin.vertex
+    maybe_gremlin.marks[@mark] = maybe_gremlin.vertex
     maybe_gremlin
   end
 end
@@ -153,8 +152,7 @@ class Merge < Pipe
     return Commands::PULL if !maybe_gremlin && @vertices.empty?
 
     if @vertices.empty?
-      maybe_gremlin.state[:marks] ||= {}
-      @vertices = @marks.map { |mark| maybe_gremlin.state[:marks][mark] }.compact
+      @vertices = @marks.map { |mark| maybe_gremlin.marks[mark] }.compact
       return Commands::PULL if @vertices.empty?
     end
 
@@ -176,7 +174,7 @@ class Except < Pipe
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    if maybe_gremlin.state[:marks][@mark] == maybe_gremlin.vertex
+    if maybe_gremlin.marks[@mark] == maybe_gremlin.vertex
       return Commands::PULL
     end
 
@@ -247,6 +245,6 @@ class Back < Pipe
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    maybe_gremlin.go_to_vertex(maybe_gremlin.state[:marks][@mark])
+    maybe_gremlin.go_to_vertex(maybe_gremlin.marks[@mark])
   end
 end
