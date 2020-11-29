@@ -218,35 +218,22 @@ class WithAttributes < Pipe
   end
 end
 
-class SelectAttribute < Pipe
+class SelectAttributes < Pipe
   def initialize(graph, args)
     super
 
-    @attribute = args[:attribute]
+    @attributes = args[:attributes]
   end
 
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    maybe_gremlin.result = maybe_gremlin.vertex.attributes[@attribute]
+    maybe_gremlin.result = maybe_gremlin.vertex.attributes.slice(*@attributes)
     if maybe_gremlin.result.nil?
       false
     else
       maybe_gremlin
     end
-  end
-end
-
-class SelectId < Pipe
-  def initialize(graph, args)
-    super
-  end
-
-  def next(maybe_gremlin)
-    return Commands::PULL unless maybe_gremlin
-
-    maybe_gremlin.result = maybe_gremlin.vertex.id
-    maybe_gremlin
   end
 end
 

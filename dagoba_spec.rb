@@ -272,7 +272,7 @@ describe Dagoba do
       )
     end
 
-    it "allows selecting attributes in results" do
+    it "allows selecting attributes in results", :aggregate_failures do
       graph = Dagoba.new {
         relationship(:employee_of, inverse: :employer_of)
         add_entry("alice", {salary: 100_000})
@@ -281,24 +281,13 @@ describe Dagoba do
         establish("alice").employee_of("charlie")
         establish("bob").employee_of("charlie")
       }
-      expect(graph.find("charlie").employer_of.select_attribute(:salary).run).to contain_exactly(
-        100_000,
-        70_000
+      expect(graph.find("charlie").employer_of.select_attributes(:salary).run).to contain_exactly(
+        {salary: 100_000},
+        {salary: 70_000}
       )
-    end
-
-    it "allows selecting ids in results" do
-      graph = Dagoba.new {
-        relationship(:employee_of, inverse: :employer_of)
-        add_entry("alice", {salary: 100_000})
-        add_entry("bob", {salary: 70_000})
-        add_entry("charlie", {salary: 1_000_000})
-        establish("alice").employee_of("charlie")
-        establish("bob").employee_of("charlie")
-      }
-      expect(graph.find("charlie").employer_of.select_id.run).to contain_exactly(
-        "alice",
-        "bob"
+      expect(graph.find("charlie").employer_of.select_attributes(:id, :salary).run).to contain_exactly(
+        {id: "alice", salary: 100_000},
+        {id: "bob", salary: 70_000}
       )
     end
 
@@ -382,9 +371,9 @@ describe Dagoba do
         establish("bob").employer_of("charlie")
         establish("alice").employer_of("daniel")
         add_query(:middle_managers) { |command| command.employer_of.as(:manager).employer_of.back(:manager) }
-        add_query(:titles) { |command| command.select_attribute(:title) }
+        add_query(:titles) { |command| command.select_attributes(:title) }
       }
-      expect(graph.find("alice").middle_managers.titles.run).to contain_exactly("EM2")
+      expect(graph.find("alice").middle_managers.titles.run).to contain_exactly({title: "EM2"})
     end
   end
 end

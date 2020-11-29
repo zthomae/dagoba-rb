@@ -105,17 +105,14 @@ class FindCommand
     self
   end
 
-  def select_attribute(attribute)
-    unless attribute.is_a?(Symbol)
-      raise ArgumentError.new("attribute #{attribute} must be a symbol")
+  def select_attributes(*attributes)
+    attributes.each do |attribute|
+      unless attribute.is_a?(Symbol)
+        raise ArgumentError.new("attribute #{attribute} must be a symbol")
+      end
     end
 
-    @program << SelectAttribute.new(@graph, {attribute: attribute})
-    self
-  end
-
-  def select_id
-    @program << SelectId.new(@graph, {})
+    @program << SelectAttributes.new(@graph, {attributes: attributes})
     self
   end
 

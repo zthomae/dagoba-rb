@@ -79,8 +79,7 @@ There are also a set of special searching methods:
 - `unique` will deduplicate a result set by vertex ID.
 - `with_attributes` will filter out vertices in the result set that do not match all of a set of provided attributes.
   This is provided as a syntactic sugar, and could be implemented in terms of `where`.
-- `select_attribute` will return only a given attribute when the search is run, instead of entire vertices.
-- `select_id` will return only the result IDs when a search is run.
+- `select_attributes` will return only the given attributes when the search is run.
 - `back` will move the search pointer back to a marked vertex if a search has evaluated to a positive result.
   This is useful for retreating back to a desired vertex after conditions on its relations have been satisfied.
 
