@@ -96,7 +96,7 @@ class Filter < Pipe
   end
 
   def next(maybe_gremlin)
-    if !maybe_gremlin || !@predicate.call(maybe_gremlin.vertex.node)
+    if !maybe_gremlin || !@predicate.call(maybe_gremlin.vertex)
       return Commands::PULL
     end
 
@@ -193,9 +193,9 @@ class Unique < Pipe
 
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
-    return Commands::PULL if @seen[maybe_gremlin.vertex.node.id]
+    return Commands::PULL if @seen[maybe_gremlin.vertex.id]
 
-    @seen[maybe_gremlin.vertex.node.id] = true
+    @seen[maybe_gremlin.vertex.id] = true
     maybe_gremlin
   end
 end
@@ -211,7 +211,7 @@ class WithAttributes < Pipe
     return Commands::PULL unless maybe_gremlin
 
     @attributes.each do |key, value|
-      return Commands::PULL if maybe_gremlin.vertex.node.attributes[key] != value
+      return Commands::PULL if maybe_gremlin.vertex.attributes[key] != value
     end
 
     maybe_gremlin
@@ -228,7 +228,7 @@ class SelectAttribute < Pipe
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    maybe_gremlin.result = maybe_gremlin.vertex.node.attributes[@attribute]
+    maybe_gremlin.result = maybe_gremlin.vertex.attributes[@attribute]
     if maybe_gremlin.result.nil?
       false
     else
@@ -245,7 +245,7 @@ class SelectId < Pipe
   def next(maybe_gremlin)
     return Commands::PULL unless maybe_gremlin
 
-    maybe_gremlin.result = maybe_gremlin.vertex.node.id
+    maybe_gremlin.result = maybe_gremlin.vertex.id
     maybe_gremlin
   end
 end

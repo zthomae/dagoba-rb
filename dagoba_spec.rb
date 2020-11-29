@@ -112,6 +112,16 @@ describe Dagoba do
       graph = Dagoba.new
       expect { graph.add_entry("alice", {"foo" => 1}) }.to raise_error(ArgumentError)
     end
+
+    it "requires query types to be symbols" do
+      graph = Dagoba.new
+      expect { graph.add_query("something") { |x| x } }.to raise_error(ArgumentError)
+    end
+
+    it "requires queries to be defined with blocks" do
+      graph = Dagoba.new
+      expect { graph.add_query(:something) }.to raise_error(ArgumentError)
+    end
   end
 
   describe "searching graphs" do
@@ -132,8 +142,8 @@ describe Dagoba do
         establish("start").knows("end")
       }
       expect(graph.find("start").knows.run).to contain_exactly(
-        Graph::Node.new(id: "start", attributes: {}),
-        Graph::Node.new(id: "end", attributes: {})
+        {id: "end"},
+        {id: "start"}
       )
     end
 
@@ -148,8 +158,8 @@ describe Dagoba do
         establish("charlie").parent_of("bob")
       }
       expect(graph.find("alice").parent_of.child_of.run).to contain_exactly(
-        Graph::Node.new(id: "alice", attributes: {age: 45, education: "Ph.D"}),
-        Graph::Node.new(id: "charlie", attributes: {age: 35, education: nil})
+        {id: "alice", age: 45, education: "Ph.D"},
+        {id: "charlie", age: 35, education: nil}
       )
     end
 
@@ -165,7 +175,7 @@ describe Dagoba do
       expect(
         graph.find("alice").parent_of.where { |child| child.attributes[:age] > 10 }.run
       ).to contain_exactly(
-        Graph::Node.new(id: "bob", attributes: {age: 12})
+        {id: "bob", age: 12}
       )
     end
 
@@ -186,17 +196,9 @@ describe Dagoba do
       }
       # TODO: Should ordering be defined?
       base_query = graph.find("alice").parent_of.take(2)
-      expect(base_query.run).to contain_exactly(
-        Graph::Node.new(id: "emilio", attributes: {}),
-        Graph::Node.new(id: "frank", attributes: {})
-      )
-      expect(base_query.run).to contain_exactly(
-        Graph::Node.new(id: "charlie", attributes: {}),
-        Graph::Node.new(id: "daniel", attributes: {})
-      )
-      expect(base_query.run).to contain_exactly(
-        Graph::Node.new(id: "bob", attributes: {})
-      )
+      expect(base_query.run).to contain_exactly({id: "emilio"}, {id: "frank"})
+      expect(base_query.run).to contain_exactly({id: "charlie"}, {id: "daniel"})
+      expect(base_query.run).to contain_exactly({id: "bob"})
     end
 
     it "allows marking nodes and merging them into a single result set" do
@@ -215,11 +217,7 @@ describe Dagoba do
         .child_of.as(:grandparent)
         .child_of.as(:great_grandparent)
         .merge(:parent, :grandparent, :great_grandparent)
-      expect(query.run).to contain_exactly(
-        Graph::Node.new(id: "alice", attributes: {}),
-        Graph::Node.new(id: "bob", attributes: {}),
-        Graph::Node.new(id: "charlie", attributes: {})
-      )
+      expect(query.run).to contain_exactly({id: "alice"}, {id: "bob"}, {id: "charlie"})
     end
 
     it "allows marking nodes and excluding them from a result set" do
@@ -237,10 +235,7 @@ describe Dagoba do
         .child_of
         .parent_of
         .except(:me)
-      expect(query.run).to contain_exactly(
-        Graph::Node.new(id: "charlie", attributes: {}),
-        Graph::Node.new(id: "daniel", attributes: {})
-      )
+      expect(query.run).to contain_exactly({id: "charlie"}, {id: "daniel"})
     end
 
     it "allows making result sets unique" do
@@ -254,9 +249,7 @@ describe Dagoba do
         establish("alice").parent_of("charlie")
         establish("alice").parent_of("daniel")
       }
-      expect(graph.find("alice").parent_of.child_of.unique.run).to contain_exactly(
-        Graph::Node.new(id: "alice", attributes: {})
-      )
+      expect(graph.find("alice").parent_of.child_of.unique.run).to contain_exactly({id: "alice"})
     end
 
     it "allows selecting results by attribute", :aggregate_failures do
@@ -271,11 +264,11 @@ describe Dagoba do
         establish("charlie").employee_of("daniel")
       }
       expect(graph.find("daniel").employer_of.with_attributes({programmer: true}).run).to contain_exactly(
-        Graph::Node.new(id: "alice", attributes: {programmer: true, salaried: true}),
-        Graph::Node.new(id: "charlie", attributes: {programmer: true, salaried: false})
+        {id: "alice", programmer: true, salaried: true},
+        {id: "charlie", programmer: true, salaried: false}
       )
       expect(graph.find("daniel").employer_of.with_attributes({programmer: true, salaried: false}).run).to contain_exactly(
-        Graph::Node.new(id: "charlie", attributes: {programmer: true, salaried: false})
+        {id: "charlie", programmer: true, salaried: false}
       )
     end
 
@@ -336,18 +329,7 @@ describe Dagoba do
         .employer_of.as(:manager)
         .employer_of.with_attributes({programmer: true})
         .back(:manager)
-        .select_id
-      expect(query.run).to contain_exactly("daniel")
-    end
-
-    it "requires query types to be symbols" do
-      graph = Dagoba.new
-      expect { graph.add_query("something") { |x| x } }.to raise_error(ArgumentError)
-    end
-
-    it "requires queries to be defined with blocks" do
-      graph = Dagoba.new
-      expect { graph.add_query(:something) }.to raise_error(ArgumentError)
+      expect(query.run).to contain_exactly({id: "daniel"})
     end
 
     it "evaluates queries correctly" do
@@ -362,7 +344,7 @@ describe Dagoba do
         establish("alice").employer_of("daniel")
         add_query(:middle_managers) { |command| command.employer_of.as(:manager).employer_of.back(:manager) }
       }
-      expect(graph.find("alice").middle_managers.select_id.run).to contain_exactly("bob")
+      expect(graph.find("alice").middle_managers.run).to contain_exactly({id: "bob"})
     end
 
     it "allows redefining queries", :aggregate_failures do
@@ -379,11 +361,14 @@ describe Dagoba do
       graph.add_query(:interesting_managers) do |command|
         command.employer_of.as(:manager).employer_of.back(:manager)
       end
-      expect(graph.find("alice").interesting_managers.select_id.run).to contain_exactly("bob")
+      expect(graph.find("alice").interesting_managers.run).to contain_exactly({id: "bob"})
       graph.add_query(:interesting_managers) do |command|
         command.employer_of.as(:manager)
       end
-      expect(graph.find("alice").interesting_managers.select_id.run).to contain_exactly("bob", "daniel")
+      expect(graph.find("alice").interesting_managers.run).to contain_exactly(
+        {id: "bob"},
+        {id: "daniel"}
+      )
     end
 
     it "allows second-order queries" do

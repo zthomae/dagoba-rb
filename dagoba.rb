@@ -22,8 +22,7 @@ class Dagoba
 
     validate_attributes(attributes)
 
-    node = Graph::Node.new(id: id, attributes: attributes)
-    vertex = Graph::Vertex.new(node: node, relations: [])
+    vertex = Graph::Vertex.new(attributes: attributes.merge(id: id), relations: [])
     @vertices << vertex
     @vertex_index[id] = vertex
   end
@@ -34,7 +33,7 @@ class Dagoba
     end
 
     vertex = @vertex_index[id]
-    vertex.node.attributes.merge!(attributes)
+    vertex.attributes.merge!(attributes)
   end
 
   def relationship(relationship_type, inverse:)

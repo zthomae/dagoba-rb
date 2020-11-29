@@ -46,7 +46,7 @@ class FindCommand
     end
 
     results.map do |gremlin|
-      gremlin.result || gremlin.vertex.node
+      gremlin.result || gremlin.vertex.attributes
     end
   end
 
