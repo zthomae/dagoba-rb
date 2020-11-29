@@ -4,7 +4,7 @@ require_relative "./dagoba"
 require_relative "./find_command"
 
 describe Dagoba do
-  describe "adding relationships" do
+  describe "defining graphs" do
     it "will not allow you to establish a relationship with no inverse" do
       graph = Dagoba.new
       expect { graph.relationship(:knows) }.to raise_error(ArgumentError)
@@ -102,9 +102,19 @@ describe Dagoba do
         "A relationship type with the name knows already exists"
       )
     end
+
+    it "will not allow you to use :id as an attribute" do
+      graph = Dagoba.new
+      expect { graph.add_entry("alice", {id: 1}) }.to raise_error(ArgumentError)
+    end
+
+    it "requires all attributes to be symbols" do
+      graph = Dagoba.new
+      expect { graph.add_entry("alice", {"foo" => 1}) }.to raise_error(ArgumentError)
+    end
   end
 
-  describe "querying relationships" do
+  describe "searching graphs" do
     it "returns empty when a node has no relations of a given type" do
       graph = Dagoba.new {
         relationship(:knows, inverse: :knows)

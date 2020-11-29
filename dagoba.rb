@@ -20,6 +20,8 @@ class Dagoba
       raise "An entry with id #{id} already exists"
     end
 
+    validate_attributes(attributes)
+
     node = Graph::Node.new(id: id, attributes: attributes)
     vertex = Graph::Vertex.new(node: node, relations: [])
     @vertices << vertex
@@ -108,6 +110,18 @@ class Dagoba
       )
       @edges << inverse_edge
       edge.end_vertex.relations << inverse_edge
+    end
+  end
+
+  def validate_attributes(attributes)
+    if attributes.has_key?(:id)
+      raise ArgumentError.new("Cannot use id as an attribute")
+    end
+
+    attributes.each do |attribute_name, _|
+      unless attribute_name.is_a?(Symbol)
+        raise ArgumentError.new("Attribute #{attribute_name} must be a symbol")
+      end
     end
   end
 end
