@@ -6,4 +6,4 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 gem "standard"
 gem "lefthook"
-gem "rspec"
+gem "minitest"
