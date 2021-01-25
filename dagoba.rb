@@ -10,7 +10,7 @@ class Dagoba
     @relationship_types = {}
     @query_types = {}
 
-    if block_given?
+    if block
       instance_exec(&block)
     end
   end
