@@ -19,7 +19,7 @@ jobs:
       - name: StandardRB Lint
         run: |
           gem install standardrb
-          standardrb --no-fix --format progress
+          standardrb --no-fix --format github
 
   tests:
     runs-on: ubuntu-latest
