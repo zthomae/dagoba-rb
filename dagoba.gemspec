@@ -17,7 +17,8 @@ Gem::Specification.new do |s|
   s.files = `git ls-files lib *.md LICENSE`.split("\n")
 
   s.add_development_dependency "bundler", "~> 2.1"
-  s.add_development_dependency "minitest", "~> 5.13.0"
-  s.add_development_dependency "standard", "~> 0.11.0"
-  s.add_development_dependency "lefthook", "~> 0.7.2"
+  s.add_development_dependency "minitest", "~> 5.14.0"
+  s.add_development_dependency "standard", "~> 1.1.0"
+  s.add_development_dependency "lefthook", "~> 0.7.5"
+  s.add_development_dependency "libyear-bundler", "~> 0.5.3"
 end
