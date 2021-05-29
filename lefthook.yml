@@ -1,5 +1,5 @@
 pre-commit:
   commands:
     standardrb:
-      glob: "*.rb"
+      glob: "*.{rb,gemspec}"
       run: bundle exec standardrb --fix {staged_files} && git add {staged_files}
