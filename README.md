@@ -32,7 +32,7 @@ The `establish` method begins a statement to join two vertices with a given edge
 The `query` command will let you define an alias for a set of operations on a graph.
 
 ```ruby
-graph = Dagoba.new do
+graph = Dagoba::Database.new do
   add_entry "alice"
   add_entry "bob", {hobbies: ["asdf", {x: 3}]}
 

@@ -1,7 +1,6 @@
 require "minitest/autorun"
 
-require_relative "./dagoba"
-require_relative "./find_command"
+require_relative "../../lib/dagoba"
 
 class TestDagoba < MiniTest::Test
   def assert_query_matches(query, expected_result, sort_by: :id)
@@ -12,28 +11,28 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_relationship_must_have_inverse
-    graph = Dagoba.new
+    graph = Dagoba::Database.new
     assert_raises(ArgumentError) { graph.relationship(:knows) }
     assert_raises(ArgumentError) { graph.relationship(:knows, inverse: nil) }
   end
 
   def test_relationship_type_must_be_symbol
-    graph = Dagoba.new
+    graph = Dagoba::Database.new
     assert_raises(ArgumentError) { graph.relationship("knows", inverse: :known_by) }
     assert_raises(ArgumentError) { graph.relationship(:knows, inverse: "known_by") }
     assert_raises(ArgumentError) { graph.relationship("knows", inverse: "known_by") }
   end
 
-  FindCommand.reserved_words.each do |word|
+  Dagoba::FindCommand.reserved_words.each do |word|
     define_method "test_cannot_establish_relationship_named_#{word}" do
-      graph = Dagoba.new
+      graph = Dagoba::Database.new
       assert_raises(ArgumentError) { graph.relationship(word, inverse: :foobar) }
       assert_raises(ArgumentError) { graph.relationship(:foobar, inverse: word) }
     end
   end
 
   def test_relationship_must_have_valid_starting_index
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:knows, inverse: :knows)
       add_entry("end")
     }
@@ -43,7 +42,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_cannot_establish_relationship_with_invalid_type
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       add_entry "start"
       add_entry "end"
     }
@@ -51,7 +50,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_can_establish_relationship_between_two_vertices
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       add_entry("start")
       add_entry("end")
       relationship(:knows, inverse: :knows)
@@ -60,7 +59,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_can_establish_inverse_relationships
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       add_entry("start")
       add_entry("end")
       relationship(:knows, inverse: :known_by)
@@ -69,7 +68,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_can_establish_self_relationships
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       add_entry("start")
       relationship(:knows, inverse: :knows)
     }
@@ -77,7 +76,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_can_establish_duplicate_relationships
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       add_entry("start")
       add_entry("end")
       relationship(:knows, inverse: :knows)
@@ -87,7 +86,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_can_establish_multiple_relationship_types
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       add_entry("start")
       add_entry("end")
       relationship(:knows, inverse: :knows)
@@ -98,7 +97,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_cannot_declare_duplicate_relationship_types
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:knows, inverse: :knows)
     }
     assert_raises("A relationship type with the name knows already exists") do
@@ -110,27 +109,27 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_cannot_use_id_as_attribute
-    graph = Dagoba.new
+    graph = Dagoba::Database.new
     assert_raises(ArgumentError) { graph.add_entry("alice", {id: 1}) }
   end
 
   def test_requires_all_attributes_to_be_symbols
-    graph = Dagoba.new
+    graph = Dagoba::Database.new
     assert_raises(ArgumentError) { graph.add_entry("alice", {"foo" => 1}) }
   end
 
   def test_requires_query_types_to_be_symbols
-    graph = Dagoba.new
+    graph = Dagoba::Database.new
     assert_raises(ArgumentError) { graph.add_query("something") { |x| x } }
   end
 
   def test_requires_queries_to_be_defined_with_blocks
-    graph = Dagoba.new
+    graph = Dagoba::Database.new
     assert_raises(ArgumentError) { graph.add_query(:something) }
   end
 
   def test_returns_empty_when_node_has_no_relations_of_given_type
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:knows, inverse: :knows)
       add_entry("start")
     }
@@ -138,7 +137,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_returns_correct_results_when_node_has_relations_of_given_type
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:knows, inverse: :knows)
       add_entry("start")
       add_entry("end")
@@ -152,7 +151,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_chaining_queries
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:parent_of, inverse: :child_of)
       add_entry("alice")
       add_entry("bob")
@@ -171,7 +170,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_filtering_queries
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:parent_of, inverse: :child_of)
       add_entry("alice", {age: 40})
       add_entry("bob", {age: 12})
@@ -186,7 +185,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_taking_vertices
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:parent_of, inverse: :child_of)
       add_entry("alice")
       add_entry("bob")
@@ -208,7 +207,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_marking_nodes_and_merging_into_single_result_set
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:parent_of, inverse: :child_of)
       add_entry("alice")
       add_entry("bob")
@@ -227,7 +226,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_marking_nodes_and_excluding_from_result_set
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:parent_of, inverse: :child_of)
       add_entry("alice")
       add_entry("bob")
@@ -245,7 +244,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_making_result_sets_unique
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:parent_of, inverse: :child_of)
       add_entry("alice")
       add_entry("bob")
@@ -262,7 +261,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_selecting_results_by_attribute
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice", {programmer: true, salaried: true})
       add_entry("bob", {programmer: false, salaried: true})
@@ -286,7 +285,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_selecting_attributes_in_result
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice", {salary: 100_000})
       add_entry("bob", {salary: 70_000})
@@ -312,7 +311,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_chaining_with_nonexistent_vertices
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice")
     }
@@ -320,7 +319,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_backtracking
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice", {programmer: true})
       add_entry("bob", {programmer: false})
@@ -342,7 +341,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_evaluates_queries_correctly
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice")
       add_entry("bob")
@@ -357,7 +356,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_redefining_queries
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice")
       add_entry("bob")
@@ -387,7 +386,7 @@ class TestDagoba < MiniTest::Test
   end
 
   def test_allows_second_order_queries
-    graph = Dagoba.new {
+    graph = Dagoba::Database.new {
       relationship(:employee_of, inverse: :employer_of)
       add_entry("alice", {title: "CTO", salary: 200_000})
       add_entry("bob", {title: "EM2", salary: 150_000})
