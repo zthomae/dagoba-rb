@@ -91,3 +91,6 @@ This project is licensed under the MIT license, copyright 2020 Zach Thomae.
 
 Much of this source code is inspired by or translating code from the original [Dagoba project](https://github.com/dxnn/dagoba).
 Dagoba is licensed under the [MIT license](https://github.com/dxnn/dagoba/blob/master/LICENSE), copyright 2014 Dann Toliver.
+
+The [custom Minitest reporter](test/test_helper.rb) is based on the [Drieam rspec-github gem](https://github.com/Drieam/rspec-github).
+This is licensed under the [MIT license](https://github.com/Drieam/rspec-github/blob/master/LICENSE.txt), copyright 2020 Stef Schenkelaars.
