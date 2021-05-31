@@ -7,7 +7,9 @@ module Dagoba
       @relationship_types = graph.instance_variable_get(:@relationship_types)
       @start_vertex = graph.send(:find_vertex, start_vertex_id)
       if @start_vertex.nil?
-        raise "Cannot establish relationship from nonexistent vertex #{start_vertex_id}"
+        raise ArgumentError.new(
+          "Cannot establish relationship from nonexistent vertex #{start_vertex_id}"
+        )
       end
     end
 
@@ -16,7 +18,9 @@ module Dagoba
     def create_edge(relationship_type, end_vertex_id)
       end_vertex = @graph.send(:find_vertex, end_vertex_id)
       if end_vertex.nil?
-        raise "Cannot establish relationship to nonexistent vertex #{end_vertex_id}"
+        raise ArgumentError.new(
+          "Cannot establish relationship to nonexistent vertex #{end_vertex_id}"
+        )
       end
       Graph::Edge.new(
         relationship_type: relationship_type,
