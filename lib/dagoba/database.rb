@@ -50,9 +50,9 @@ module Dagoba
       elsif !inverse.is_a?(Symbol)
         raise ArgumentError.new("inverse relationship type #{inverse} must be symbol")
       elsif @relationship_types.has_key?(relationship_type)
-        raise "A relationship type with the name #{relationship_type} already exists"
+        raise ArgumentError.new("A relationship type with the name #{relationship_type} already exists")
       elsif @relationship_types.has_key?(inverse)
-        raise "A relationship type with the name #{inverse} already exists"
+        raise ArgumentError.new("A relationship type with the name #{inverse} already exists")
       end
 
       @relationship_types[relationship_type] = inverse

@@ -36,7 +36,7 @@ class TestDagoba < MiniTest::Test
       relationship(:knows, inverse: :knows)
       add_entry("end")
     }
-    assert_raises("Cannot establish relationship from nonexistent vertex start") do
+    assert_raises(ArgumentError, "Cannot establish relationship from nonexistent vertex start") do
       graph.establish("start").knows("end")
     end
   end
@@ -100,10 +100,10 @@ class TestDagoba < MiniTest::Test
     graph = Dagoba::Database.new {
       relationship(:knows, inverse: :knows)
     }
-    assert_raises("A relationship type with the name knows already exists") do
+    assert_raises(ArgumentError, "A relationship type with the name knows already exists") do
       graph.relationship(:knows, inverse: :knows)
     end
-    assert_raises("A relationship type with the name knows already exists") do
+    assert_raises(ArgumentError, "A relationship type with the name knows already exists") do
       graph.relationship(:known_by, inverse: :knows)
     end
   end
