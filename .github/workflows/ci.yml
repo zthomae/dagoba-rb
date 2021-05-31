@@ -32,4 +32,4 @@ jobs:
           bundler-cache: true
       - name: Run tests
         run: |
-          bundle exec ruby test/lib/dagoba_test.rb
+          bundle exec rake
