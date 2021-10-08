@@ -5,15 +5,17 @@ A reinterpretation of [Dagoba: an in-memory graph database](http://aosabook.org/
 This project has two goals in mind:
 
 1. Make the public API easier to read.
+   I'm not a fan of the [Gremlin query language](<https://en.wikipedia.org/wiki/Gremlin_(query_language)>) at all.
    Trying to understand what queries like `g.v('Thor).out().out().out().in().in().in()` were supposed to _do_ while I was reading the chapter was difficult.
    The big idea I've pursued is in using relationship types as a first-class querying construct, rather than using generic `out` and `in` querying methods.
+   The price I've chosen to pay for this is to force relationship types to be defined explicitly before they're used.
 1. Make the implementation easier to understand.
    I disagree with the choice to combine initialization and evaluation in the definitions of the pipetype functions.
    I also found it difficult to understand the code in the order it was presented because it relied on concepts that were not defined well before they were used.
    Pipetypes and gremlins are good examples -- I didn't _really_ understand what was going on until the interpreter was explained near the end of the chapter.
 
 I've written this in Ruby because it's the language I use the most right now.
-I also feel pretty comfortable (ab)using it to remove most of the syntactic noise 
+I also feel pretty comfortable (ab)using it to remove most of the syntactic noise.
 
 ## Defining a graph
 
@@ -67,15 +69,15 @@ graph.find("bob").knows.run  # returns the node for "alice"
 graph.find("bob").known_by.run  # returns the node for "charlie"
 graph.find("bob").is_parent_of.run  # returns the node for "delta"
 ```
- 
+
 There are also a set of special searching methods:
 
 - `where` will filter the result set based on a predicate.
 - `take` will return only the first N items of a result set.
-   Calling `run` multiple times will return the rest of the items in sets of N.
+  Calling `run` multiple times will return the rest of the items in sets of N.
 - `as` will mark the current vertex with a symbol.
-   This allows you to reference or backtrack to it later.
-   (Since the "current" vertex will change as the search is evaluated, this can eventually be applied to multiple vertices.)
+  This allows you to reference or backtrack to it later.
+  (Since the "current" vertex will change as the search is evaluated, this can eventually be applied to multiple vertices.)
 - `merge` will return all of the vertices matched by a collection of mark names.
 - `except` will exclude vertices matched by a mark name.
 - `unique` will deduplicate a result set by vertex ID.
